@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Sequence</title>
+		<link rel="icon" href="favicon.ico" type="image/x-icon" />
+		<link rel="apple-touch-icon" href="favicon.ico" />
+		<link rel="apple-touch-icon-precomposed" href="favicon.ico" />
+		<meta name="apple-mobile-web-app-capable" content="yes" />
+		<meta name="apple-mobile-web-app-status-bar-style" content="default" />
+		<meta name="viewport" content="user-scalable=no, width=device-width" />
+		<meta name="viewport" content="minimum-scale=1.0,width=device-width,maximum-scale=1,user-scalable=no" />
+		<style>
+			body {
+				text-align:center;
+				font-family:arial;
+				background-color:white;
+			}
+			ul {
+				padding:0;
+				display:flex;
+				flex-wrap:wrap;
+				justify-content:center;
+			}
+			ul > li, button {
+				cursor:pointer;
+				background-color:#E9E9E9;
+				user-select:none;
+				-webkit-tap-highlight-color: transparent;
+			}
+			ul > li {
+				display:flex;
+				align-items: center;
+				justify-content: center;
+				width: 17vh;
+				height:17vh;
+				margin: 1.5vh;
+				font-size: 10vh;
+				border-radius:4px;
+			}
+			ul > li:active, button:active{
+				background-color:#F1F1F1;
+			}
+			div, button {display:inline-block}
+			button, input {cursor:pointer;-webkit-tap-highlight-color: transparent;outline:none}
+			button{margin:4vh 4vh 0 4vh;border:none;padding:0;width:8vh;height:8vh;font-size:3vh;border-radius:8vh;text-align:center}
+			label {color:grey;user-select:none}
+			@media (max-width: 860px) {
+				ul > li {margin:1vh;width:19vh;height:19vh;font-size:8vh;}
+				button {width:15vh;height:15vh;font-size:9vh;}
+			}
+			@media (max-width: 480px) {
+				button {margin:4vh auto;width:10vh;height:10vh;font-size:7vh;padding:0}
+				ul > li {margin:0.5vh;width:10vh;height:10vh;font-size:5vh;}
+				ul {margin:0 0 6vh 0;padding:0}
+				div, button {display:block}
+			}
+		</style>
+	</head>
+	<body ontouchstart>
+		<ul></ul>
+		<div>
+			<input type="range" min="5" max="20" value="10" /><br />
+			<label>Number Length</label>
+		</div>
+		<button onclick="run(document.getElementsByTagName('input')[0].value)">&#8634;</button>
+		<div>
+			<input type="checkbox" checked/><br />
+			<label>Sequence On</label>
+		</div>
+		
+	</body>
+</html>
+<script>
+	const
+		label = document.getElementsByTagName('label'),
+		input = document.getElementsByTagName('input');
+		ul = document.getElementsByTagName('ul');
+		li = document.getElementsByTagName('li');
+		
+	input[0].onchange = function(){
+		run(this.value);
+		label[0].innerText = "Number length";
+	}
+	input[0].onmouseout = input[0].ontouchend = function(){
+		label[0].innerText = "Number length";
+	}
+	input[0].onmousemove = input[0].ontouchmove = function(){
+		label[0].innerText = this.value;
+	}
+	label[0].onclick = function(){
+		input[0].value = 10;
+		run(10);
+	}
+	input[1].onclick = function(){
+		label[1].innerText = 'Sequence ' + (this.checked?'On':'Off');
+		run(input[0].value);
+	}
+
+	let current = 1, timer, prev,
+	speak = (txt) => {
+		var word = new SpeechSynthesisUtterance(txt)
+		word.lang = 'en';
+		word.rate = 1;
+		speechSynthesis.speak(word);
+	},
+	run = (n=10) => {
+		li.length > 0 && (ul[0].innerHTML = "");
+		current = 1;
+		if(!input[1].checked){
+			current = Math.floor(Math.random() * input[0].value)+1;
+			if(current == prev){
+				current = Math.floor(Math.random() * input[0].value)+1;
+			}
+			speak('press number '+current);
+			prev = current;
+		}
+		var num = [...Array(parseInt(n)+1).keys()].splice(1).sort(()=>Math.random()-0.5);
+		for(i in num){
+			let el = document.createElement('li');
+			el.innerText = num[i];
+			el.onmousedown = function(){
+				speak(this.innerText);
+				if(input[1].checked){
+					this.style.color = "#D5D5D5";
+					if((current==1 && this.innerText != 1) || (current != this.innerText)){
+						speak('Not correct');
+						setTimeout(function(){
+							run(input[0].value);
+						},1500);
+					}
+					else if((current)==input[0].value){
+						speak('Congratulation');
+						congratulation();
+						setTimeout(function(){
+							clearTimeout(timer);
+							document.body.style.backgroundColor = "white";
+							run(input[0].value);
+						},1500);
+					}
+					else {
+						current++;
+					}
+				}
+				else {
+					if(current==this.innerText){
+						speak('congratulation');
+						congratulation();
+						setTimeout(function(){
+							clearTimeout(timer);
+							document.body.style.backgroundColor = "white";
+							run(input[0].value);
+						},1500);
+					}
+					else {
+						speak('not correct');
+					}
+				}
+			}
+			ul[0].appendChild(el);
+		}
+	},
+	congratulation = () => {
+		timer = setTimeout(function(){
+			document.body.style.backgroundColor = document.body.style.backgroundColor=="white"?"whitesmoke":"white";
+			congratulation();
+		},200);
+	};
+	run(10);
+</script>
